@@ -1,17 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Input, Typography } from "antd";
+import { Button, Input } from "antd";
 import { MessageOutlined, ArrowDownOutlined, SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
 import { ChatService } from "./services/chatService";
-
-const { Text } = Typography;
 
 function App() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [currentMessage, setCurrentMessage] = useState("");
 	const [chatId, setChatId] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isTyping, setIsTyping] = useState(false);
 	const [messages, setMessages] = useState([]);
 	const chatboxRef = useRef(null);
 
@@ -92,6 +91,8 @@ function App() {
 		setMessages((prev) => [...prev, mockUserMessage]);
 
 		try {
+			setIsTyping(true);
+
 			const response = await ChatService.addMessage({ _id: chatId, message: currentMessage });
 			const userMessage = response.user_message;
 			const botMessage = response.bot_message;
@@ -99,6 +100,8 @@ function App() {
 			setMessages([...currentMessages, userMessage, botMessage]);
 		} catch (error) {
 			console.log(error);
+		} finally {
+			setIsTyping(false);
 		}
 	};
 
@@ -176,6 +179,29 @@ function App() {
 										<div style={{ maxWidth: "100%" }}>{message.message}</div>
 									</div>
 								))}
+								{isTyping && (
+									<motion.div
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.5 }}
+										className="chat-message bg-gray-200 text-black p-2 rounded mb-2 flex items-center"
+										style={{
+											marginLeft: "0",
+											marginRight: "auto",
+											maxWidth: "80%",
+											boxShadow: "0 2px 2px rgba(0,0,0,0.2)",
+										}}
+									>
+										<div style={{ maxWidth: "100%" }}>
+											<div className="typing-indicator">
+												<span></span>
+												<span></span>
+												<span></span>
+											</div>
+										</div>
+									</motion.div>
+								)}
 							</div>
 							<div className="chat-input">
 								<Input
