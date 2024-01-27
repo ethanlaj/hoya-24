@@ -1,139 +1,120 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Input, Typography } from "antd";
-import { MessageOutlined, ArrowDownOutlined, SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
-import { ConversationService } from "./services/conversationService";
-
-const { Text } = Typography;
+import { ChatService } from "./services/chatService";
+import TypingIndicator from "./components/TypingIndicator";
+import Message from "./components/Message";
+import ChatHeader from "./components/ChatHeader";
+import ChatToggleButton from "./components/ChatToggleButton";
+import ChatInput from "./components/ChatInput";
+import useInterceptor from "./hooks/useInterceptor";
 
 function App() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [currentMessage, setCurrentMessage] = useState("");
-	const [conversationId, setConversationId] = useState(null);
-	const [chats, _setChats] = useState([
-		{
-			id: "1",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "2",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "3",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "4",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "5",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "6",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "7",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "8",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "9",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "10",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "11",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "12",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-	]);
-
+	const [chatId, setChatId] = useState(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isIniting, setIsIniting] = useState(true);
+	const [isTyping, setIsTyping] = useState(false);
+	const [messages, setMessages] = useState([]);
+	const chatboxRef = useRef(null);
 	const [chatBoxPosition, setChatBoxPosition] = useState({ x: 0, y: 0 });
-	const buttonRef = useRef(null);
+
+	useInterceptor(setIsIniting);
 
 	useEffect(() => {
-		if (buttonRef.current) {
-			const rect = buttonRef.current.getBoundingClientRect();
-			setChatBoxPosition({
-				x: rect.left + window.scrollX,
-				y: rect.top + window.scrollY,
-			});
-		}
-	}, [isVisible]);
-
-	useEffect(() => {
-		async function createConversation() {
+		async function createChat() {
 			try {
-				const response = await ConversationService.createConversation();
-				setConversationId(response.data.conversationId);
+				const response = await ChatService.createChat();
+				localStorage.setItem("accessToken", response.access_token);
+				localStorage.setItem("refreshToken", response.refresh_token);
+				return response._id;
 			} catch (error) {
 				console.log(error);
 			}
 		}
 
-		let currentConversationId = conversationId || localStorage.getItem("conversationId");
-		if (currentConversationId) {
-			setConversationId(currentConversationId);
+		let currentChatId = chatId || localStorage.getItem("chatId");
+		if (currentChatId) {
+			setChatId(currentChatId);
+		} else {
+			createChat().then((id) => {
+				if (id) {
+					setChatId(id);
+					localStorage.setItem("chatId", id);
+				}
+			});
 		}
-	}, [conversationId]);
+	}, [chatId]);
+
+	useEffect(() => {
+		async function getMessages() {
+			try {
+				const response = await ChatService.getChat(chatId);
+				setMessages(response.messages);
+
+				if (response.messages.length === 0) {
+					const botMessage = {
+						sender: "bot",
+						message:
+							"Thanks for reaching out! I'm JayBot, an admissions AI bot, and you can ask me anything about Elizabethtown College!",
+					};
+
+					setMessages([botMessage]);
+				}
+			} catch (error) {
+				console.log(error);
+				setChatId(null);
+				localStorage.removeItem("chatId");
+			}
+		}
+
+		if (chatId) {
+			getMessages();
+			setIsLoading(false);
+		}
+	}, [chatId]);
 
 	const toggleChatBox = () => {
 		setIsVisible(!isVisible);
+		setTimeout(() => {
+			scrollToBottom();
+		}, 100);
 	};
 
-	const handleMessageSend = () => {
-		// Send message to server
+	const scrollToBottom = () => {
+		if (chatboxRef.current) chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
+	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages]);
+
+	const handleMessageSend = async () => {
+		if (currentMessage.trim() === "") return;
+
 		setCurrentMessage("");
-		console.log(currentMessage);
-	};
+		const currentMessages = messages;
+		const mockUserMessage = {
+			message: currentMessage,
+			sender: "user",
+			createdAt: new Date(),
+		};
 
-	const handleKeyDown = (e) => {
-		if (e.key === "Enter") {
-			handleMessageSend();
+		setMessages((prev) => [...prev, mockUserMessage]);
+
+		try {
+			setIsTyping(true);
+
+			const response = await ChatService.addMessage({ _id: chatId, message: currentMessage });
+			const userMessage = response.user_message;
+			const botMessage = response.bot_message;
+
+			setMessages([...currentMessages, userMessage, botMessage]);
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsTyping(false);
 		}
 	};
 
@@ -152,68 +133,60 @@ function App() {
 		},
 	};
 
-	return (
-		<div className="fixed bottom-4 right-4">
-			<Button
-				ref={buttonRef}
-				type="primary"
-				shape="circle"
-				style={{ width: "50px", height: "50px" }}
-				icon={isVisible ? <ArrowDownOutlined /> : <MessageOutlined />}
-				onClick={toggleChatBox}
-				className="text-xl z-20 chat-btn"
-			/>
+	if (isIniting) return null;
 
-			<AnimatePresence>
-				{isVisible && (
-					<motion.div
-						initial="hidden"
-						animate="visible"
-						exit="hidden"
-						variants={chatBoxVariants}
-						transition={{ type: "spring", stiffness: 260, damping: 20 }}
-						style={{ bottom: "60px", height: "500px" }}
-						className="chat-box bg-white shadow-lg rounded absolute right-0 w-96 z-10 flex flex-col justify-between"
-					>
-						<div className="bg-gray-800" style={{ height: "50px" }}>
-							<Text className="text-white text-center">Admissions AI Chat</Text>
-						</div>
-						<div className="p-4 flex flex-col" style={{ height: "90%" }}>
-							<div className="chat-window overflow-y-auto mb-2 flex-1">
-								{chats.map((chat) => (
-									<div
-										key={chat.id}
-										className={`chat-message ${
-											chat.sender === "user"
-												? "bg-gray-200"
-												: "bg-blue-500 text-white"
-										} p-2 rounded mb-2`}
-									>
-										{chat.message}
-									</div>
-								))}
-							</div>
-							<div className="chat-input">
-								<Input
-									placeholder="Type your message here..."
-									onKeyDown={handleKeyDown}
-									value={currentMessage}
-									onChange={(e) => setCurrentMessage(e.target.value)}
-								/>
-								<Button
-									icon={<SendOutlined />}
-									type="primary"
-									className="mt-2 w-full"
-									onClick={handleMessageSend}
+	return (
+		<>
+			{/* For demo purposes only */}
+			<iframe
+				src="https://etown.edu"
+				width="100%"
+				height="100%"
+				className="absolute border-none"
+			/>
+			<div className="fixed bottom-4 right-4">
+				<ChatToggleButton
+					isLoading={isLoading}
+					isVisible={isVisible}
+					toggleChatBox={toggleChatBox}
+					setChatBoxPosition={setChatBoxPosition}
+				/>
+
+				<AnimatePresence>
+					{isVisible && (
+						<motion.div
+							initial="hidden"
+							animate="visible"
+							exit="hidden"
+							variants={chatBoxVariants}
+							transition={{ type: "spring", stiffness: 260, damping: 20 }}
+							style={{ bottom: "60px", height: "500px" }}
+							className="chat-box bg-white shadow-lg rounded absolute right-0 w-96 z-10 flex flex-col justify-between"
+						>
+							<ChatHeader />
+							<div className="p-4 flex flex-col" style={{ height: "85%" }}>
+								<div
+									ref={chatboxRef}
+									className="chat-window overflow-y-auto mb-2 flex-1"
 								>
-									Send
-								</Button>
+									{messages.map((message, index) => (
+										<Message key={index} message={message} />
+									))}
+
+									{isTyping && <TypingIndicator />}
+								</div>
+								<ChatInput
+									handleMessageSend={handleMessageSend}
+									currentMessage={currentMessage}
+									setCurrentMessage={setCurrentMessage}
+									isDisabled={isTyping}
+								/>
 							</div>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</>
 	);
 }
 
