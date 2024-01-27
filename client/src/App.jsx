@@ -3,95 +3,17 @@ import { Button, Input, Typography } from "antd";
 import { MessageOutlined, ArrowDownOutlined, SendOutlined } from "@ant-design/icons";
 import { motion, AnimatePresence } from "framer-motion";
 import "./App.css";
-import { ConversationService } from "./services/conversationService";
+import { ChatService } from "./services/chatService";
 
 const { Text } = Typography;
 
 function App() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [currentMessage, setCurrentMessage] = useState("");
-	const [conversationId, setConversationId] = useState(null);
-	const [chats, _setChats] = useState([
-		{
-			id: "1",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "2",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "3",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "4",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "5",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "6",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "7",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "8",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "9",
-			message: "Hello",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "10",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-		{
-			id: "11",
-			message:
-				"Lorum ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-			sender: "user",
-			createdAt: "2021-08-01T00:00:00.000Z",
-		},
-		{
-			id: "12",
-			message: "Hi",
-			sender: "bot",
-			createdAt: "2021-08-01T00:00:00.000Z",
-			link: "https://www.google.com",
-		},
-	]);
+	const [chatId, setChatId] = useState(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [messages, setMessages] = useState([]);
+	const chatboxRef = useRef(null);
 
 	const [chatBoxPosition, setChatBoxPosition] = useState({ x: 0, y: 0 });
 	const buttonRef = useRef(null);
@@ -107,31 +29,73 @@ function App() {
 	}, [isVisible]);
 
 	useEffect(() => {
-		async function createConversation() {
+		async function createChat() {
 			try {
-				const response = await ConversationService.createConversation();
-				setConversationId(response.data.conversationId);
+				const response = await ChatService.createChat();
+				return response._id;
 			} catch (error) {
 				console.log(error);
 			}
 		}
 
-		let currentConversationId = conversationId || localStorage.getItem("conversationId");
-		if (currentConversationId) {
-			setConversationId(currentConversationId);
+		let currentChatId = chatId || localStorage.getItem("chatId");
+		if (currentChatId) {
+			setChatId(currentChatId);
 		} else {
-			createConversation();
+			createChat().then((id) => {
+				setChatId(id);
+				localStorage.setItem("chatId", id);
+			});
 		}
-	}, [conversationId]);
+	}, [chatId]);
+
+	useEffect(() => {
+		async function getMessages() {
+			try {
+				const response = await ChatService.getChat(chatId);
+				setMessages(response.messages);
+				scrollToBottom();
+			} catch (error) {
+				console.log(error);
+			}
+		}
+
+		if (chatId) {
+			getMessages();
+			setIsLoading(false);
+		}
+	}, [chatId]);
 
 	const toggleChatBox = () => {
 		setIsVisible(!isVisible);
 	};
 
-	const handleMessageSend = () => {
-		// Send message to server
+	const scrollToBottom = () => {
+		if (chatboxRef.current) chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
+	};
+
+	const handleMessageSend = async () => {
 		setCurrentMessage("");
-		console.log(currentMessage);
+		const currentMessages = messages;
+		const mockUserMessage = {
+			message: currentMessage,
+			sender: "user",
+			createdAt: new Date(),
+		};
+
+		setMessages((prev) => [...prev, mockUserMessage]);
+		scrollToBottom();
+
+		try {
+			const response = await ChatService.addMessage({ _id: chatId, message: currentMessage });
+			const userMessage = response.user_message;
+			const botMessage = response.bot_message;
+
+			setMessages([...currentMessages, userMessage, botMessage]);
+			scrollToBottom();
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	const handleKeyDown = (e) => {
@@ -184,23 +148,26 @@ function App() {
 							</div>
 						</div>
 						<div className="p-4 flex flex-col" style={{ height: "90%" }}>
-							<div className="chat-window overflow-y-auto mb-2 flex-1">
-								{chats.map((chat) => (
+							<div
+								ref={chatboxRef}
+								className="chat-window overflow-y-auto mb-2 flex-1"
+							>
+								{messages.map((message, index) => (
 									<div
-										key={chat.id}
+										key={index}
 										className={`chat-message ${
-											chat.sender === "bot"
+											message.sender === "bot"
 												? "bg-gray-200 text-black"
 												: "bg-blue-500 text-white"
 										} p-2 rounded mb-2 flex items-center`}
 										style={{
-											marginLeft: chat.sender === "bot" ? "0" : "auto",
-											marginRight: chat.sender === "bot" ? "auto" : "0",
+											marginLeft: message.sender === "bot" ? "0" : "auto",
+											marginRight: message.sender === "bot" ? "auto" : "0",
 											maxWidth: "80%",
 											boxShadow: "0 2px 2px rgba(0,0,0,0.2)",
 										}}
 									>
-										<div style={{ maxWidth: "100%" }}>{chat.message}</div>
+										<div style={{ maxWidth: "100%" }}>{message.message}</div>
 									</div>
 								))}
 							</div>

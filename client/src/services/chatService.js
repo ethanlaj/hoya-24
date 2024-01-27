@@ -9,11 +9,12 @@ export class ChatService {
 		return response.data;
 	}
 
-	static async createMessage(data) {
-		/**
-		 * 
-		 */
+	static async getChat(id) {
+		const response = await axios.get(url + `/${id}`);
+		return response.data;
+	}
 
+	static async addMessage(data) {
 		const response = await axios.put(url, data);
 		return response.data;
 	}
