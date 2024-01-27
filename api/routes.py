@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from bson.objectid import ObjectId
 from datetime import datetime
+import time
 
 load_dotenv()
 
@@ -78,6 +79,9 @@ def add_message():
     )
     if (res.modified_count == 0):
         return jsonify({'error': 'Chat not found'}), 404
+
+    # wait 5 seconds
+    time.sleep(5)
 
     return jsonify({
         'user_message': user_message,

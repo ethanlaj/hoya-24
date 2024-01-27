@@ -54,7 +54,6 @@ function App() {
 			try {
 				const response = await ChatService.getChat(chatId);
 				setMessages(response.messages);
-				scrollToBottom();
 			} catch (error) {
 				console.log(error);
 			}
@@ -68,11 +67,18 @@ function App() {
 
 	const toggleChatBox = () => {
 		setIsVisible(!isVisible);
+		setTimeout(() => {
+			scrollToBottom();
+		}, 100);
 	};
 
 	const scrollToBottom = () => {
 		if (chatboxRef.current) chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
 	};
+
+	useEffect(() => {
+		scrollToBottom();
+	}, [messages]);
 
 	const handleMessageSend = async () => {
 		setCurrentMessage("");
@@ -84,7 +90,6 @@ function App() {
 		};
 
 		setMessages((prev) => [...prev, mockUserMessage]);
-		scrollToBottom();
 
 		try {
 			const response = await ChatService.addMessage({ _id: chatId, message: currentMessage });
@@ -92,7 +97,6 @@ function App() {
 			const botMessage = response.bot_message;
 
 			setMessages([...currentMessages, userMessage, botMessage]);
-			scrollToBottom();
 		} catch (error) {
 			console.log(error);
 		}
@@ -124,6 +128,8 @@ function App() {
 			<Button
 				ref={buttonRef}
 				type="primary"
+				loading={isLoading}
+				disabled={isLoading}
 				shape="circle"
 				style={{ width: "50px", height: "50px" }}
 				icon={isVisible ? <ArrowDownOutlined /> : <MessageOutlined />}
