@@ -7,21 +7,27 @@ import Message from "./components/Message";
 import ChatHeader from "./components/ChatHeader";
 import ChatToggleButton from "./components/ChatToggleButton";
 import ChatInput from "./components/ChatInput";
+import useInterceptor from "./hooks/useInterceptor";
 
 function App() {
 	const [isVisible, setIsVisible] = useState(false);
 	const [currentMessage, setCurrentMessage] = useState("");
 	const [chatId, setChatId] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isIniting, setIsIniting] = useState(true);
 	const [isTyping, setIsTyping] = useState(false);
 	const [messages, setMessages] = useState([]);
 	const chatboxRef = useRef(null);
 	const [chatBoxPosition, setChatBoxPosition] = useState({ x: 0, y: 0 });
 
+	useInterceptor(setIsIniting);
+
 	useEffect(() => {
 		async function createChat() {
 			try {
 				const response = await ChatService.createChat();
+				localStorage.setItem("accessToken", response.access_token);
+				localStorage.setItem("refreshToken", response.refresh_token);
 				return response._id;
 			} catch (error) {
 				console.log(error);
@@ -46,6 +52,8 @@ function App() {
 				setMessages(response.messages);
 			} catch (error) {
 				console.log(error);
+				setChatId(null);
+				localStorage.removeItem("chatId");
 			}
 		}
 
@@ -110,6 +118,8 @@ function App() {
 			y: 0,
 		},
 	};
+
+	if (isIniting) return null;
 
 	return (
 		<>
