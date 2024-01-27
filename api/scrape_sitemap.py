@@ -2,10 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import xml.etree.ElementTree as ET
 from time import sleep
-from azure.cosmos import CosmosClient, PartitionKey
-import os
+from azure.cosmos import PartitionKey
 from dotenv import load_dotenv
 import uuid
+from api.cosmosdb import database
 
 load_dotenv()
 
@@ -17,14 +17,8 @@ root = ET.fromstring(sitemap_xml)
 urls = [url.text for url in root.findall(
     './/{http://www.sitemaps.org/schemas/sitemap/0.9}loc')]
 
-endpoint = "https://hoya24.documents.azure.com:443/"
-key = os.getenv("AZURE_COSMOS_DB_KEY")
-client = CosmosClient(endpoint, key)
 
-database_id = "hoya24"
 container_id = "sitetext"
-
-database = client.create_database_if_not_exists(id=database_id)
 container = database.create_container_if_not_exists(
     id=container_id,
     partition_key=PartitionKey(path="/url")
