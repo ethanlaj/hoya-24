@@ -1,31 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from pymongo.server_api import ServerApi
-from pymongo.mongo_client import MongoClient
-from dotenv import load_dotenv
-import os
 from bson.objectid import ObjectId
 from datetime import datetime
 import time
-
-load_dotenv()
+from db import db
 
 app = Flask(__name__)
 CORS(app)
 
-user = os.getenv('MONGO_USER')
-password = os.getenv('MOGNO_PWD')
-
-uri = f"mongodb+srv://{user}:{password}@cluster0.zpcscby.mongodb.net/?retryWrites=true&w=majority"
-client = MongoClient(uri, server_api=ServerApi('1'))
-
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
-
-db = client.get_database('hoya')
 chats = db.chatdb
 
 
