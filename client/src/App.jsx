@@ -112,47 +112,56 @@ function App() {
 	};
 
 	return (
-		<div className="fixed bottom-4 right-4">
-			<ChatToggleButton
-				isLoading={isLoading}
-				isVisible={isVisible}
-				toggleChatBox={toggleChatBox}
-				setChatBoxPosition={setChatBoxPosition}
+		<>
+			{/* For demo purposes only */}
+			<iframe
+				src="https://etown.edu"
+				width="100%"
+				height="100%"
+				className="absolute border-none"
 			/>
+			<div className="fixed bottom-4 right-4">
+				<ChatToggleButton
+					isLoading={isLoading}
+					isVisible={isVisible}
+					toggleChatBox={toggleChatBox}
+					setChatBoxPosition={setChatBoxPosition}
+				/>
 
-			<AnimatePresence>
-				{isVisible && (
-					<motion.div
-						initial="hidden"
-						animate="visible"
-						exit="hidden"
-						variants={chatBoxVariants}
-						transition={{ type: "spring", stiffness: 260, damping: 20 }}
-						style={{ bottom: "60px", height: "500px" }}
-						className="chat-box bg-white shadow-lg rounded absolute right-0 w-96 z-10 flex flex-col justify-between"
-					>
-						<ChatHeader />
-						<div className="p-4 flex flex-col" style={{ height: "90%" }}>
-							<div
-								ref={chatboxRef}
-								className="chat-window overflow-y-auto mb-2 flex-1"
-							>
-								{messages.map((message, index) => (
-									<Message key={index} message={message} />
-								))}
+				<AnimatePresence>
+					{isVisible && (
+						<motion.div
+							initial="hidden"
+							animate="visible"
+							exit="hidden"
+							variants={chatBoxVariants}
+							transition={{ type: "spring", stiffness: 260, damping: 20 }}
+							style={{ bottom: "60px", height: "500px" }}
+							className="chat-box bg-white shadow-lg rounded absolute right-0 w-96 z-10 flex flex-col justify-between"
+						>
+							<ChatHeader />
+							<div className="p-4 flex flex-col" style={{ height: "85%" }}>
+								<div
+									ref={chatboxRef}
+									className="chat-window overflow-y-auto mb-2 flex-1"
+								>
+									{messages.map((message, index) => (
+										<Message key={index} message={message} />
+									))}
 
-								{isTyping && <TypingIndicator />}
+									{isTyping && <TypingIndicator />}
+								</div>
+								<ChatInput
+									handleMessageSend={handleMessageSend}
+									currentMessage={currentMessage}
+									setCurrentMessage={setCurrentMessage}
+								/>
 							</div>
-							<ChatInput
-								handleMessageSend={handleMessageSend}
-								currentMessage={currentMessage}
-								setCurrentMessage={setCurrentMessage}
-							/>
-						</div>
-					</motion.div>
-				)}
-			</AnimatePresence>
-		</div>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</div>
+		</>
 	);
 }
 
