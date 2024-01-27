@@ -3,7 +3,7 @@ from flask_cors import CORS
 from bson.objectid import ObjectId
 from datetime import datetime
 import time
-from db import db
+from mongodb import db
 
 app = Flask(__name__)
 CORS(app)
