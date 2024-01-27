@@ -79,7 +79,8 @@ function App() {
 		},
 		{
 			id: "11",
-			message: "Hello",
+			message:
+				"Lorum ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
 			sender: "user",
 			createdAt: "2021-08-01T00:00:00.000Z",
 		},
@@ -118,6 +119,8 @@ function App() {
 		let currentConversationId = conversationId || localStorage.getItem("conversationId");
 		if (currentConversationId) {
 			setConversationId(currentConversationId);
+		} else {
+			createConversation();
 		}
 	}, [conversationId]);
 
@@ -175,8 +178,10 @@ function App() {
 						style={{ bottom: "60px", height: "500px" }}
 						className="chat-box bg-white shadow-lg rounded absolute right-0 w-96 z-10 flex flex-col justify-between"
 					>
-						<div className="bg-gray-800" style={{ height: "50px" }}>
-							<Text className="text-white text-center">Admissions AI Chat</Text>
+						<div className="bg-gray-800" style={{ height: "60px" }}>
+							<div className="text-white text-lg text-center leading-10">
+								Admissions AI Chat
+							</div>
 						</div>
 						<div className="p-4 flex flex-col" style={{ height: "90%" }}>
 							<div className="chat-window overflow-y-auto mb-2 flex-1">
@@ -184,12 +189,18 @@ function App() {
 									<div
 										key={chat.id}
 										className={`chat-message ${
-											chat.sender === "user"
-												? "bg-gray-200"
+											chat.sender === "bot"
+												? "bg-gray-200 text-black"
 												: "bg-blue-500 text-white"
-										} p-2 rounded mb-2`}
+										} p-2 rounded mb-2 flex items-center`}
+										style={{
+											marginLeft: chat.sender === "bot" ? "0" : "auto",
+											marginRight: chat.sender === "bot" ? "auto" : "0",
+											maxWidth: "80%",
+											boxShadow: "0 2px 2px rgba(0,0,0,0.2)",
+										}}
 									>
-										{chat.message}
+										<div style={{ maxWidth: "100%" }}>{chat.message}</div>
 									</div>
 								))}
 							</div>

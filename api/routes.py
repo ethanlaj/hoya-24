@@ -1,7 +1,6 @@
+from flask import Flask, jsonify, request
 from pymongo.server_api import ServerApi
 from pymongo.mongo_client import MongoClient
-from flask import Flask, jsonify, request
-from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 
@@ -21,23 +20,8 @@ try:
 except Exception as e:
     print(e)
 
-# Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
-db = client['chatdb']
-chats = db.chats
-
-
-@app.route('/chats', methods=['GET'])
-def get_chats():
-    all_chats = chats.find()
-    return jsonify([chat for chat in all_chats])
-
-
-@app.route('/chats', methods=['POST'])
-def add_chat():
-    chat_data = request.json
-    result = chats.insert_one(chat_data)
-    return jsonify({'_id': str(result.inserted_id)})
+db = client.get_database('hoya')
+chats = db.chatdb
 
 
 @app.route('/chats/<id>', methods=['GET'])
@@ -47,6 +31,23 @@ def get_chat(id):
         return jsonify(chat)
     else:
         return jsonify({'error': 'Chat not found'}), 404
+
+
+@app.route('/chats', methods=['POST'])
+def create_chat():
+    chat_data = request.json
+    result = chats.insert_one(chat_data)
+    return jsonify({'_id': str(result.inserted_id)})
+
+
+@app.route('/chats', methods=['PUT'])
+def add_message():
+    chat_data = request.json
+    result = chats.update_one({
+        '_id': chat_data['_id']},
+        {'$push': {'messages': chat_data['message']}}
+    )
+    return jsonify({'_id': str(result.inserted_id)})
 
 
 if __name__ == '__main__':
