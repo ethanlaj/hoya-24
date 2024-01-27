@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.chat-btn svg {
+  width: 25px;
+  height: 25px;
+}
