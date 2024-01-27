@@ -39,8 +39,10 @@ function App() {
 			setChatId(currentChatId);
 		} else {
 			createChat().then((id) => {
-				setChatId(id);
-				localStorage.setItem("chatId", id);
+				if (id) {
+					setChatId(id);
+					localStorage.setItem("chatId", id);
+				}
 			});
 		}
 	}, [chatId]);
