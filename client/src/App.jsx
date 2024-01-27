@@ -52,6 +52,16 @@ function App() {
 			try {
 				const response = await ChatService.getChat(chatId);
 				setMessages(response.messages);
+
+				if (response.messages.length === 0) {
+					const botMessage = {
+						sender: "bot",
+						message:
+							"Thanks for reaching out! I'm JayBot, an admissions AI bot, and you can ask me anything about Elizabethtown College!",
+					};
+
+					setMessages([botMessage]);
+				}
 			} catch (error) {
 				console.log(error);
 				setChatId(null);
@@ -81,6 +91,8 @@ function App() {
 	}, [messages]);
 
 	const handleMessageSend = async () => {
+		if (currentMessage.trim() === "") return;
+
 		setCurrentMessage("");
 		const currentMessages = messages;
 		const mockUserMessage = {
@@ -167,6 +179,7 @@ function App() {
 									handleMessageSend={handleMessageSend}
 									currentMessage={currentMessage}
 									setCurrentMessage={setCurrentMessage}
+									isDisabled={isTyping}
 								/>
 							</div>
 						</motion.div>
