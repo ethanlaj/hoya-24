@@ -13,8 +13,8 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Ensure you have a requirements.txt in your application's directory listing all your dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Gunicorn and Supervisord
-RUN pip install gunicorn supervisor
+# Install Supervisord
+RUN pip install supervisor
 
 # Expose the port where the app runs
 EXPOSE 8080
