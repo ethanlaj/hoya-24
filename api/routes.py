@@ -95,7 +95,7 @@ def add_message():
         'createdAt': datetime.now()
     }
 
-    retrieval_response = retrieval(chat_data['message'],context)
+    retrieval_response = retrieval(chat_data['message'], context)
 
     # In case first model fails, go through with second model anyways
     if retrieval_response is None or retrieval_response['valid'] == True:
