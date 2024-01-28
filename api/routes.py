@@ -4,9 +4,9 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from datetime import timedelta
 import jwt
-import time
 from mongodb import db
 import os
+from gpt import retrieval, generation
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -92,12 +92,27 @@ def add_message():
         'sender': 'user',
         'createdAt': datetime.now()
     }
-    bot_message = {
-        'message': "Lorum ipsum dolor sit amet consectetur adipiscing elit. Nulla facilisi cras fermentum odio euismod.",
-        'sender': 'bot',
-        'createdAt': datetime.now(),
-        'link': 'https://www.google.com'
-    }
+
+    retrieval_response = retrieval(chat_data['message'])
+
+    # In case first model fails, go through with second model anyways
+    if retrieval_response is None or retrieval_response['valid'] == True:
+        generation_response = generation(chat_data['message'])
+        message = "An error occurred. Please try again later."
+        if (generation_response is not None):
+            message = generation_response
+
+        bot_message = {
+            'message': message,
+            'sender': 'bot',
+            'createdAt': datetime.now(),
+        }
+    else:
+        bot_message = {
+            'message': retrieval_response['message'],
+            'sender': 'bot',
+            'createdAt': datetime.now(),
+        }
 
     res = chats.update_one({
         '_id': ObjectId(chat_data['_id'])},
@@ -105,9 +120,6 @@ def add_message():
     )
     if (res.modified_count == 0):
         return jsonify({'error': 'Chat not found'}), 404
-
-    # wait 5 seconds
-    time.sleep(5)
 
     return jsonify({
         'user_message': user_message,
@@ -123,13 +135,13 @@ def refresh():
         payload = jwt.decode(
             refresh_token, REFRESH_KEY_SECRET, algorithms=['HS256'])
 
-        payload['exp'] = datetime.datetime.utcnow() + \
-            datetime.timedelta(hours=1)
+        payload['exp'] = datetime.utcnow() + \
+            timedelta(hours=1)
         access_token = jwt.encode(
             payload, ACCESS_KEY_SECRET, algorithm='HS256')
 
-        payload['exp'] = datetime.datetime.utcnow() + \
-            datetime.timedelta(hours=5)
+        payload['exp'] = datetime.utcnow() + \
+            timedelta(hours=5)
         refresh_token = jwt.encode(
             payload, REFRESH_KEY_SECRET, algorithm='HS256')
 
