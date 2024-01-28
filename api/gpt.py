@@ -24,10 +24,12 @@ def retrieval(query, context):
     if context is None:
         context = []
         
-    context_messages = [
-        {"role": "assistant" if msg['sender'] == "bot" else msg["sender"], "content": msg['message']} for msg in context
+    # Assuming context is a list of dictionaries
+    context_messages = [{"role": "assistant" if msg['sender'] == "bot" else msg["sender"], "content": msg['message']} for msg in context[-3:]
+    ] if len(context) >= 3 else [
+        {"role": "assistant" if msg['sender'] == "bot" else msg["sender"], "content": msg['message']} 
+        for msg in context
     ]
-
 # Append the user message to the context_messages list
     context_messages.append({
         "role": "user",
