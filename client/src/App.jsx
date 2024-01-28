@@ -104,7 +104,7 @@ function App() {
 		setMessages((prev) => [...prev, mockUserMessage]);
 
 		try {
-			context = currentMessages.slice(-3, -1);
+			const context = currentMessages.slice(-3, -1);
 			setIsTyping(true);
 
 			const response = await ChatService.addMessage({ _id: chatId, message: currentMessage, context : context });
