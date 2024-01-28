@@ -26,4 +26,4 @@ EXPOSE 8080
 
 # The command to run the application using Gunicorn
 # CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
