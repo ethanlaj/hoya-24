@@ -19,6 +19,7 @@ RUN pip install gunicorn supervisor
 # Set the FLASK_APP environment variable
 ENV FLASK_APP=main.py
 ENV FLASK_ENV=development
+ENV FLASK_DEBUG=1
 
 # Expose the port where the app runs
 EXPOSE 8080
