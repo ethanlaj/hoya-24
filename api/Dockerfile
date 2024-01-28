@@ -16,6 +16,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install Gunicorn and Supervisord
 RUN pip install gunicorn supervisor
 
+# Set the FLASK_APP environment variable
+ENV FLASK_APP=main.py
+ENV FLASK_ENV=development
+
 # Expose the port where the app runs
 EXPOSE 8080
 
