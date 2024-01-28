@@ -87,13 +87,15 @@ def add_message():
     if (id != chat_data['_id']):
         return jsonify({'error': 'Access denied'}), 403
 
+    context = chat_data.get('context', [])
+
     user_message = {
         'message': chat_data['message'],
         'sender': 'user',
         'createdAt': datetime.now()
     }
 
-    retrieval_response = retrieval(chat_data['message'])
+    retrieval_response = retrieval(chat_data['message'],context)
 
     # In case first model fails, go through with second model anyways
     if retrieval_response is None or retrieval_response['valid'] == True:
