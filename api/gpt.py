@@ -37,15 +37,12 @@ def retrieval(query, context):
     completion = client.chat.completions.create(
         model=deployment_id,
         messages=[
-        {
-            "role": "system",
-            "content": "You are an AI assistant that validates and reformats prompts that are put into another AI model.\nIf the user input is related to the school application, make the user input more straightforward so that an AI model can search the information about the user's questions. Please return False if the user input is not related to Elizabethtown College and return the message 'I cannot help you with that request', otherwise return True and reformat the original request for better use of prompt engineering\nPlease return the data in json format: { valid: boolean, message: string}",
-        },
-        *context_messages,  # Use the unpacking operator to include context_messages
-        ],
-
-            
-        ,
+            {
+                "role": "system",
+                "content": "You are an AI assistant that validates and reformats prompts that are put into another AI model.\nIf the user input is related to the school application, make the user input more straightforward so that an AI model can search the information about the user's questions. Please return False if the user input is not related to Elizabethtown College and return the message 'I cannot help you with that request', otherwise return True and reformat the original request for better use of prompt engineering\nPlease return the data in json format: { valid: boolean, message: string}",
+            },
+            *context_messages,  # Use the unpacking operator to include context_messages
+        ],  
         temperature=0.5,
         max_tokens=800,
         top_p=0.95,
