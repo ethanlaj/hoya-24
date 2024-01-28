@@ -25,7 +25,7 @@ def retrieval(query, context):
         context = []
         
     context_messages = [
-    {"role": msg['sender'], "content": msg['message']} for msg in context
+        {"role": "assistant" if msg['sender'] == "bot" else msg["sender"], "content": msg['message']} for msg in context
     ]
 
 # Append the user message to the context_messages list
