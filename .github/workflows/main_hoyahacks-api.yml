@@ -45,7 +45,7 @@ jobs:
                   path: |
                       release.zip
                       !venv/
-              working-directory: ./api
+                  working-directory: ./api
 
     deploy:
         runs-on: ubuntu-latest
