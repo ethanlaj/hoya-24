@@ -4,7 +4,7 @@ from azure.cosmos import CosmosClient
 
 load_dotenv()
 
-endpoint = "https://hoya24.documents.azure.com:443/"
+endpoint = "https://cosmosrgeastusbd1a70d0-90a9-46a7-bba9db.documents.azure.com:443/"
 key = os.getenv("AZURE_COSMOS_DB_KEY")
 client = CosmosClient(endpoint, key)
 

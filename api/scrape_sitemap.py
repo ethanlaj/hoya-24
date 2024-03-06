@@ -77,3 +77,7 @@ def init_scrape_process():
                     f"HTTP Error: {page_response.status_code} for URL: {url}")
         except Exception as e:
             print(e)
+
+
+if __name__ == "__main__":
+    init_scrape_process()
