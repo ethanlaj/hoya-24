@@ -42,9 +42,8 @@ jobs:
               with:
                   name: python-app
                   path: |
-                      release.zip
-                      !venv/
-                  working-directory: ./api
+                      api/release.zip
+                      !api/venv/
 
     deploy:
         runs-on: ubuntu-latest
@@ -58,7 +57,6 @@ jobs:
               uses: actions/download-artifact@v3
               with:
                   name: python-app
-              working-directory: ./api
 
             - name: Unzip artifact for deployment
               run: unzip release.zip
