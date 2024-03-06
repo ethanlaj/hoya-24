@@ -60,7 +60,6 @@ jobs:
 
             - name: Unzip artifact for deployment
               run: unzip release.zip
-              working-directory: ./api
 
             - name: "Deploy to Azure Web App"
               uses: azure/webapps-deploy@v2
@@ -69,4 +68,3 @@ jobs:
                   app-name: "hoyahacks-api"
                   slot-name: "Production"
                   publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CA9AB5EB5B604675B39971FFB55AC84C }}
-                  working-directory: ./api
