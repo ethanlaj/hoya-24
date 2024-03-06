@@ -70,4 +70,4 @@ jobs:
                   app-name: "hoyahacks-api"
                   slot-name: "Production"
                   publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CA9AB5EB5B604675B39971FFB55AC84C }}
-              working-directory: ./api
+                  working-directory: ./api
